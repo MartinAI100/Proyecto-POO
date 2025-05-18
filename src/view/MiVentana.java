@@ -1,12 +1,11 @@
 package view;
 
-import javax.swing.*;
+import control.Sistema;
 import java.awt.*;
-import java.awt.event.*;
-import control.SistemaConDibujos;
-import model.*;
-
+import java.util.ArrayList;
 import java.util.Random;
+import javax.swing.*;
+import model.*;
 
 public class MiVentana extends JFrame {
     private JPanel canvas;
@@ -81,67 +80,41 @@ public class MiVentana extends JFrame {
         setVisible(true);
     }
 
-    private void crearMenu() {
-        JMenuBar bar = new JMenuBar();
-
-        JMenu menu = new JMenu("Añadir");
-        JMenuItem c1 = new JMenuItem("Círculo");
-        JMenuItem c2 = new JMenuItem("Cuadrado");
-        JMenuItem c3 = new JMenuItem("Triángulo");
-        JMenuItem c4 = new JMenuItem("Ovalo");
-        JMenuItem c5 = new JMenuItem("Estrella");
-        JMenuItem c6 = new JMenuItem("Casa (Figura compuesta)");
-
-        c1.addActionListener(e -> {
-            SistemaConDibujos.figuras.add(new Circulo(new Point(100, 100), aleatorioColor(), 30));
-            repaint();
-        });
-        c2.addActionListener(e -> {
-            SistemaConDibujos.figuras.add(new Cuadrado(new Point(200, 100), aleatorioColor(), 50));
-            repaint();
-        });
-        c3.addActionListener(e -> {
-            SistemaConDibujos.figuras.add(new Poligono(new Point(300, 100), aleatorioColor(),
-                    new int[]{0, 40, 20}, new int[]{0, 0, 50}));
-            repaint();
-        });
-        c4.addActionListener(e -> {
-            SistemaConDibujos.figuras.add(new Ovalo(new Point(400, 100), aleatorioColor(), 70, 40));
-            repaint();
-        });
-        c5.addActionListener(e -> {
-            SistemaConDibujos.figuras.add(new Estrella(new Point(500, 100), aleatorioColor(), 30));
-            repaint();
-        });
-        c6.addActionListener(e -> {
-            FiguraCompuesta casa = new FiguraCompuesta(new Point(600, 300), Color.BLACK);
-            casa.agregar(new Cuadrado(new Point(600, 300), Color.ORANGE, 60));
-            casa.agregar(new Poligono(new Point(600, 300), Color.RED,
-                    new int[]{0, 60, 30}, new int[]{0, 0, -40}));
-            SistemaConDibujos.figuras.add(casa);
-            repaint();
-        });
-
-        menu.add(c1); menu.add(c2); menu.add(c3); menu.add(c4); menu.add(c5); menu.add(c6);
-        bar.add(menu);
-
-        JMenu archivo = new JMenu("Archivo");
-        JMenuItem guardar = new JMenuItem("Guardar");
-        JMenuItem cargar = new JMenuItem("Cargar");
-        JMenuItem stats = new JMenuItem("Estadísticas");
-
-        guardar.addActionListener(e -> SistemaConDibujos.guardar("dibujos.txt"));
-        cargar.addActionListener(e -> { SistemaConDibujos.cargarDesdeArchivo("dibujos.txt"); repaint(); });
-        stats.addActionListener(e -> SistemaConDibujos.mostrarEstadisticas());
-
-        archivo.add(guardar); archivo.add(cargar); archivo.add(stats);
-        bar.add(archivo);
-
-        setJMenuBar(bar);
+    private void agregarCirculo() {
+        Random rand = new Random();
+        int x = rand.nextInt(lienzo.getWidth() - 100) + 50;
+        int y = rand.nextInt(lienzo.getHeight() - 100) + 50;
+        int radio = rand.nextInt(30) + 20;
+        Color color = new Color(rand.nextInt(255), rand.nextInt(255), rand.nextInt(255));
+        sistema.addFigura(new Circulo(new model.Point(x, y), color, radio));
+        lienzo.repaint();
     }
 
-    private Color aleatorioColor() {
-        Random r = new Random();
-        return new Color(r.nextInt(256), r.nextInt(256), r.nextInt(256));
+    private void agregarCuadrado() {
+        Random rand = new Random();
+        int x = rand.nextInt(lienzo.getWidth() - 100) + 50;
+        int y = rand.nextInt(lienzo.getHeight() - 100) + 50;
+        int lado = rand.nextInt(40) + 20;
+        Color color = new Color(rand.nextInt(255), rand.nextInt(255), rand.nextInt(255));
+        sistema.addFigura(new Cuadrado(new model.Point(x, y), color, lado));
+        lienzo.repaint();
+    }
+
+    private void agregarPoligono() {
+        Random rand = new Random();
+        int numVertices = rand.nextInt(3) + 3; // 3 a 5 vértices
+        ArrayList<model.Point> vertices = new ArrayList<>();
+        int x0 = rand.nextInt(lienzo.getWidth() - 100) + 50;
+        int y0 = rand.nextInt(lienzo.getHeight() - 100) + 50;
+        int radio = rand.nextInt(30) + 30;
+        double angulo = 2 * Math.PI / numVertices;
+        for (int i = 0; i < numVertices; i++) {
+            int x = (int) (x0 + radio * Math.cos(i * angulo));
+            int y = (int) (y0 + radio * Math.sin(i * angulo));
+            vertices.add(new model.Point(x, y));
+        }
+        Color color = new Color(rand.nextInt(255), rand.nextInt(255), rand.nextInt(255));
+        sistema.addFigura(new Poligono(color, vertices));
+        lienzo.repaint();
     }
 }
