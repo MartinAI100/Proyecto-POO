@@ -1,120 +1,147 @@
 package view;
 
-import model.*;
-import control.Sistema;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.util.ArrayList;
+import control.SistemaConDibujos;
+import model.*;
+
 import java.util.Random;
 
 public class MiVentana extends JFrame {
-    private Sistema sistema;
-    private JPanel lienzo;
+    private JPanel canvas;
+    private Figura figuraSeleccionada = null;
+    private Point lastMousePos = null;
 
-    public MiVentana(Sistema sistema) {
-        this.sistema = sistema;
-        setTitle("GeoDraw");
-        setSize(800, 600);
+    public MiVentana() {
+        setTitle("GeoDraw - Proyecto Final");
+        setSize(900, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
 
-        // Menú
-        JMenuBar menuBar = new JMenuBar();
-        JMenu menuFiguras = new JMenu("Añadir Figura");
-        JMenuItem itemCirculo = new JMenuItem("Círculo");
-        JMenuItem itemCuadrado = new JMenuItem("Cuadrado");
-        JMenuItem itemPoligono = new JMenuItem("Polígono");
-        menuFiguras.add(itemCirculo);
-        menuFiguras.add(itemCuadrado);
-        menuFiguras.add(itemPoligono);
+        crearMenu();
 
-        JMenu menuArchivo = new JMenu("Archivo");
-        JMenuItem itemGuardar = new JMenuItem("Guardar");
-        JMenuItem itemCargar = new JMenuItem("Cargar");
-        JMenuItem itemLimpiar = new JMenuItem("Limpiar Lienzo");
-        menuArchivo.add(itemGuardar);
-        menuArchivo.add(itemCargar);
-        menuArchivo.add(itemLimpiar);
-
-        menuBar.add(menuArchivo);
-        menuBar.add(menuFiguras);
-        setJMenuBar(menuBar);
-
-        // Lienzo
-        lienzo = new JPanel() {
+        canvas = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
-                for (Figura f : sistema.getFiguras()) {
+                for (Figura f : SistemaConDibujos.figuras) {
                     f.dibujar(g);
                 }
             }
         };
-        add(lienzo);
 
-        // Listeners
-        itemCirculo.addActionListener(e -> agregarCirculo());
-        itemCuadrado.addActionListener(e -> agregarCuadrado());
-        itemPoligono.addActionListener(e -> agregarPoligono());
-        itemLimpiar.addActionListener(e -> {
-            sistema.clearFiguras();
-            lienzo.repaint();
-        });
-        itemGuardar.addActionListener(e -> {
-            try {
-                sistema.guardar("figuras.dat");
-                JOptionPane.showMessageDialog(this, "Guardado con éxito");
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Error al guardar: " + ex.getMessage());
+        canvas.addMouseListener(new MouseAdapter() {
+            public void mousePressed(MouseEvent e) {
+                for (Figura f : SistemaConDibujos.figuras) {
+                    if (f.estaDentro(e.getX(), e.getY())) {
+                        if (SwingUtilities.isLeftMouseButton(e)) {
+                            figuraSeleccionada = f;
+                            lastMousePos = new Point(e.getX(), e.getY());
+                        } else if (SwingUtilities.isRightMouseButton(e)) {
+                            SistemaConDibujos.figuras.remove(f);
+                        }
+                        repaint();
+                        return;
+                    }
+                }
+            }
+
+            public void mouseReleased(MouseEvent e) {
+                figuraSeleccionada = null;
+                lastMousePos = null;
+            }
+
+            public void mouseClicked(MouseEvent e) {
+                if (SwingUtilities.isLeftMouseButton(e)) {
+                    for (Figura f : SistemaConDibujos.figuras) {
+                        if (f.estaDentro(e.getX(), e.getY())) {
+                            f.setColor(aleatorioColor());
+                            repaint();
+                            break;
+                        }
+                    }
+                }
             }
         });
-        itemCargar.addActionListener(e -> {
-            try {
-                sistema.cargar("figuras.dat");
-                lienzo.repaint();
-                JOptionPane.showMessageDialog(this, "Cargado con éxito");
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Error al cargar: " + ex.getMessage());
+
+        canvas.addMouseMotionListener(new MouseMotionAdapter() {
+            public void mouseDragged(MouseEvent e) {
+                if (figuraSeleccionada != null && lastMousePos != null) {
+                    int dx = e.getX() - lastMousePos.x;
+                    int dy = e.getY() - lastMousePos.y;
+                    figuraSeleccionada.mover(dx, dy);
+                    lastMousePos = new Point(e.getX(), e.getY());
+                    repaint();
+                }
             }
         });
+
+        add(canvas);
+        setVisible(true);
     }
 
-    private void agregarCirculo() {
-        Random rand = new Random();
-        int x = rand.nextInt(lienzo.getWidth() - 100) + 50;
-        int y = rand.nextInt(lienzo.getHeight() - 100) + 50;
-        int radio = rand.nextInt(30) + 20;
-        Color color = new Color(rand.nextInt(255), rand.nextInt(255), rand.nextInt(255));
-        sistema.addFigura(new Circulo(new Point(x, y), color, radio));
-        lienzo.repaint();
+    private void crearMenu() {
+        JMenuBar bar = new JMenuBar();
+
+        JMenu menu = new JMenu("Añadir");
+        JMenuItem c1 = new JMenuItem("Círculo");
+        JMenuItem c2 = new JMenuItem("Cuadrado");
+        JMenuItem c3 = new JMenuItem("Triángulo");
+        JMenuItem c4 = new JMenuItem("Ovalo");
+        JMenuItem c5 = new JMenuItem("Estrella");
+        JMenuItem c6 = new JMenuItem("Casa (Figura compuesta)");
+
+        c1.addActionListener(e -> {
+            SistemaConDibujos.figuras.add(new Circulo(new Point(100, 100), aleatorioColor(), 30));
+            repaint();
+        });
+        c2.addActionListener(e -> {
+            SistemaConDibujos.figuras.add(new Cuadrado(new Point(200, 100), aleatorioColor(), 50));
+            repaint();
+        });
+        c3.addActionListener(e -> {
+            SistemaConDibujos.figuras.add(new Poligono(new Point(300, 100), aleatorioColor(),
+                    new int[]{0, 40, 20}, new int[]{0, 0, 50}));
+            repaint();
+        });
+        c4.addActionListener(e -> {
+            SistemaConDibujos.figuras.add(new Ovalo(new Point(400, 100), aleatorioColor(), 70, 40));
+            repaint();
+        });
+        c5.addActionListener(e -> {
+            SistemaConDibujos.figuras.add(new Estrella(new Point(500, 100), aleatorioColor(), 30));
+            repaint();
+        });
+        c6.addActionListener(e -> {
+            FiguraCompuesta casa = new FiguraCompuesta(new Point(600, 300), Color.BLACK);
+            casa.agregar(new Cuadrado(new Point(600, 300), Color.ORANGE, 60));
+            casa.agregar(new Poligono(new Point(600, 300), Color.RED,
+                    new int[]{0, 60, 30}, new int[]{0, 0, -40}));
+            SistemaConDibujos.figuras.add(casa);
+            repaint();
+        });
+
+        menu.add(c1); menu.add(c2); menu.add(c3); menu.add(c4); menu.add(c5); menu.add(c6);
+        bar.add(menu);
+
+        JMenu archivo = new JMenu("Archivo");
+        JMenuItem guardar = new JMenuItem("Guardar");
+        JMenuItem cargar = new JMenuItem("Cargar");
+        JMenuItem stats = new JMenuItem("Estadísticas");
+
+        guardar.addActionListener(e -> SistemaConDibujos.guardar("dibujos.txt"));
+        cargar.addActionListener(e -> { SistemaConDibujos.cargarDesdeArchivo("dibujos.txt"); repaint(); });
+        stats.addActionListener(e -> SistemaConDibujos.mostrarEstadisticas());
+
+        archivo.add(guardar); archivo.add(cargar); archivo.add(stats);
+        bar.add(archivo);
+
+        setJMenuBar(bar);
     }
 
-    private void agregarCuadrado() {
-        Random rand = new Random();
-        int x = rand.nextInt(lienzo.getWidth() - 100) + 50;
-        int y = rand.nextInt(lienzo.getHeight() - 100) + 50;
-        int lado = rand.nextInt(40) + 20;
-        Color color = new Color(rand.nextInt(255), rand.nextInt(255), rand.nextInt(255));
-        sistema.addFigura(new Cuadrado(new Point(x, y), color, lado));
-        lienzo.repaint();
-    }
-
-    private void agregarPoligono() {
-        Random rand = new Random();
-        int numVertices = rand.nextInt(3) + 3; // 3 a 5 vértices
-        ArrayList<Point> vertices = new ArrayList<>();
-        int x0 = rand.nextInt(lienzo.getWidth() - 100) + 50;
-        int y0 = rand.nextInt(lienzo.getHeight() - 100) + 50;
-        int radio = rand.nextInt(30) + 30;
-        double angulo = 2 * Math.PI / numVertices;
-        for (int i = 0; i < numVertices; i++) {
-            int x = (int) (x0 + radio * Math.cos(i * angulo));
-            int y = (int) (y0 + radio * Math.sin(i * angulo));
-            vertices.add(new Point(x, y));
-        }
-        Color color = new Color(rand.nextInt(255), rand.nextInt(255), rand.nextInt(255));
-        sistema.addFigura(new Poligono(color, vertices));
-        lienzo.repaint();
+    private Color aleatorioColor() {
+        Random r = new Random();
+        return new Color(r.nextInt(256), r.nextInt(256), r.nextInt(256));
     }
 }

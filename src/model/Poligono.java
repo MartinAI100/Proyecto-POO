@@ -1,25 +1,29 @@
 package model;
+
 import java.awt.*;
-import java.util.ArrayList;
 
 public class Poligono extends Figura {
-    private ArrayList<Point> vertices;
+    private int[] xPoints, yPoints;
 
-    public Poligono(Color color, ArrayList<Point> vertices) {
-        super(vertices.get(0), color);
-        this.vertices = vertices;
+    public Poligono(Point posicion, Color color, int[] dx, int[] dy) {
+        super(posicion, color);
+        xPoints = new int[dx.length];
+        yPoints = new int[dy.length];
+        for (int i = 0; i < dx.length; i++) {
+            xPoints[i] = posicion.x + dx[i];
+            yPoints[i] = posicion.y + dy[i];
+        }
     }
 
     @Override
     public void dibujar(Graphics g) {
         g.setColor(color);
-        int n = vertices.size();
-        int[] xs = new int[n];
-        int[] ys = new int[n];
-        for (int i = 0; i < n; i++) {
-            xs[i] = vertices.get(i).x;
-            ys[i] = vertices.get(i).y;
-        }
-        g.fillPolygon(xs, ys, n);
+        g.fillPolygon(xPoints, yPoints, xPoints.length);
+    }
+
+    @Override
+    public boolean estaDentro(int x, int y) {
+        Polygon p = new Polygon(xPoints, yPoints, xPoints.length);
+        return p.contains(x, y);
     }
 }

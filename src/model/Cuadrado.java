@@ -1,4 +1,5 @@
 package model;
+
 import java.awt.*;
 
 public class Cuadrado extends Figura {
@@ -12,6 +13,12 @@ public class Cuadrado extends Figura {
     @Override
     public void dibujar(Graphics g) {
         g.setColor(color);
-        g.fillRect(posicion.x - lado/2, posicion.y - lado/2, lado, lado);
+        g.fillRect(posicion.x, posicion.y, lado, lado);
+    }
+
+    @Override
+    public boolean estaDentro(int x, int y) {
+        return x >= posicion.x && x <= posicion.x + lado &&
+               y >= posicion.y && y <= posicion.y + lado;
     }
 }

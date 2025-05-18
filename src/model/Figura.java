@@ -1,8 +1,8 @@
 package model;
-import java.awt.*;
-import java.io.Serializable;
 
-public abstract class Figura implements Serializable {
+import java.awt.*;
+
+public abstract class Figura {
     protected Point posicion;
     protected Color color;
 
@@ -12,9 +12,18 @@ public abstract class Figura implements Serializable {
     }
 
     public abstract void dibujar(Graphics g);
+    public abstract boolean estaDentro(int x, int y);
 
-    public Point getPosicion() { return posicion; }
-    public void setPosicion(Point p) { this.posicion = p; }
-    public Color getColor() { return color; }
-    public void setColor(Color c) { this.color = c; }
+    public void mover(int dx, int dy) {
+        posicion.x += dx;
+        posicion.y += dy;
+    }
+
+    public void setColor(Color nuevo) {
+        this.color = nuevo;
+    }
+
+    public String getTipo() {
+        return getClass().getSimpleName();
+    }
 }
