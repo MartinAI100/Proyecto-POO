@@ -1,13 +1,11 @@
 package view;
 
-import model.*;
 import control.Sistema;
-
-import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.Random;
+import javax.swing.*;
+import model.*;
 
 public class MiVentana extends JFrame {
     private Sistema sistema;
@@ -86,7 +84,7 @@ public class MiVentana extends JFrame {
         int y = rand.nextInt(lienzo.getHeight() - 100) + 50;
         int radio = rand.nextInt(30) + 20;
         Color color = new Color(rand.nextInt(255), rand.nextInt(255), rand.nextInt(255));
-        sistema.addFigura(new Circulo(new Point(x, y), color, radio));
+        sistema.addFigura(new Circulo(new model.Point(x, y), color, radio));
         lienzo.repaint();
     }
 
@@ -96,14 +94,14 @@ public class MiVentana extends JFrame {
         int y = rand.nextInt(lienzo.getHeight() - 100) + 50;
         int lado = rand.nextInt(40) + 20;
         Color color = new Color(rand.nextInt(255), rand.nextInt(255), rand.nextInt(255));
-        sistema.addFigura(new Cuadrado(new Point(x, y), color, lado));
+        sistema.addFigura(new Cuadrado(new model.Point(x, y), color, lado));
         lienzo.repaint();
     }
 
     private void agregarPoligono() {
         Random rand = new Random();
         int numVertices = rand.nextInt(3) + 3; // 3 a 5 vértices
-        ArrayList<Point> vertices = new ArrayList<>();
+        ArrayList<model.Point> vertices = new ArrayList<>();
         int x0 = rand.nextInt(lienzo.getWidth() - 100) + 50;
         int y0 = rand.nextInt(lienzo.getHeight() - 100) + 50;
         int radio = rand.nextInt(30) + 30;
@@ -111,7 +109,7 @@ public class MiVentana extends JFrame {
         for (int i = 0; i < numVertices; i++) {
             int x = (int) (x0 + radio * Math.cos(i * angulo));
             int y = (int) (y0 + radio * Math.sin(i * angulo));
-            vertices.add(new Point(x, y));
+            vertices.add(new model.Point(x, y));
         }
         Color color = new Color(rand.nextInt(255), rand.nextInt(255), rand.nextInt(255));
         sistema.addFigura(new Poligono(color, vertices));
